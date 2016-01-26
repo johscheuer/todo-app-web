@@ -1,8 +1,8 @@
 FROM alpine:3.3
 MAINTAINER Johannes M. Scheuermann <joh.scheuer@gmail.com>
 
-ADD ./bin/todo-app /app/todo-app
-ADD ./public /app/public
+COPY ./bin/todo-app /app/todo-app
+COPY ./public /app/public
 
 WORKDIR /app
 CMD ["./todo-app"]
