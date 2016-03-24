@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 
@@ -19,30 +20,34 @@ func CreateRedisClient(addr string) *(redis.Client) {
 }
 
 func ReadTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	key := mux.Vars(req)["key"]
-	client := CreateRedisClient("redis-slave:6379")
-	cmd := client.LRange(key, -100, 100)
+	cmd := CreateRedisClient("redis-slave:6379").LRange(mux.Vars(req)["key"], -100, 100)
+	if cmd.Err() != nil {
+		http.Error(rw, cmd.Err().Error(), 500)
+		fmt.Println(cmd.Err())
+	}
 	membersJSON, err := json.MarshalIndent(cmd.Val(), "", "  ")
 	if err != nil {
 		http.Error(rw, err.Error(), 500)
-		panic(err)
+		fmt.Println(err)
 	}
 	rw.Write(membersJSON)
 }
 
 func InsertTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	key := mux.Vars(req)["key"]
-	value := mux.Vars(req)["value"]
-	client := CreateRedisClient("redis-master:6379")
-	client.RPush(key, value)
+	cmd := CreateRedisClient("redis-master:6379").RPush(mux.Vars(req)["key"], mux.Vars(req)["value"])
+	if cmd.Err() != nil {
+		http.Error(rw, cmd.Err().Error(), 500)
+		fmt.Println(cmd.Err())
+	}
 	ReadTodoHandler(rw, req)
 }
 
 func DeleteTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	key := mux.Vars(req)["key"]
-	value := mux.Vars(req)["value"]
-	client := CreateRedisClient("redis-master:6379")
-	client.LRem(key, 1, value)
+	cmd := CreateRedisClient("redis-master:6379").LRem(mux.Vars(req)["key"], 1, mux.Vars(req)["value"])
+	if cmd.Err() != nil {
+		http.Error(rw, cmd.Err().Error(), 500)
+		fmt.Println(cmd.Err())
+	}
 	ReadTodoHandler(rw, req)
 }
 
@@ -50,7 +55,7 @@ func HealthCheck(rw http.ResponseWriter, req *http.Request) {
 	aliveJSON, err := json.MarshalIndent("Alive", "", "  ")
 	if err != nil {
 		http.Error(rw, err.Error(), 500)
-		panic(err)
+		fmt.Println(err)
 	}
 	rw.Write(aliveJSON)
 }
@@ -59,16 +64,15 @@ func ResponseWithIPs(rw http.ResponseWriter, r *http.Request) {
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		http.Error(rw, err.Error(), 500)
-		panic(err)
+		fmt.Println(err)
 	}
 
 	var addresses []string
 	for _, i := range ifaces {
-
 		addrs, err := i.Addrs()
 		if err != nil {
 			http.Error(rw, err.Error(), 500)
-			panic(err)
+			fmt.Println(err)
 		}
 
 		for _, addr := range addrs {

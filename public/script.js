@@ -2,6 +2,9 @@ $(document).ready(function() {
   var entryContentElement = $("#todo-input");
 
   var appendTodoList = function(data) {
+    if (data == null) {
+      return
+    }
     $("#Todos > tbody").empty();
     $.each(data, function(key, val) {
       var myRow = '<tr><td class="col-md-10">'+val+'</td><td class="vcenter col-md-2"><input type="checkbox" name="deleteCheck" value="1"/></td></tr>';
