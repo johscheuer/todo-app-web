@@ -7,8 +7,7 @@ $(document).ready(function() {
     }
     $("#Todos > tbody").empty();
     $.each(data, function(key, val) {
-      var myRow = '<tr><td class="col-md-10">'+val+'</td><td class="vcenter col-md-2"><input type="checkbox" name="deleteCheck" value="1"/></td></tr>';
-      $("#Todos > tbody").append(myRow);
+      $("#Todos > tbody").append('<tr><td class="col-xs-10 col-sm-10 col-md-10">'+val+'</td><td align="center" class="col-xs-2 col-sm-2 col-md-2"><input type="checkbox" name="deleteCheck" value="1"/></td></tr>');
     });
   }
 
