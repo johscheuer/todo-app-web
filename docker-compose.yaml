@@ -1,0 +1,22 @@
+version: "2"
+services:
+  todoApp:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: johscheuer/todo-app-web:v2
+    ports:
+     - "3000"
+    depends_on:
+     - redis-master
+     - redis-slave
+  redis-slave:
+    image: johscheuer/redis-slave:v1
+    depends_on:
+     - redis-master
+  redis-master:
+    image: johscheuer/redis-master:v1
+
+networks:
+  default:
+    driver: bridge

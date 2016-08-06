@@ -6,9 +6,10 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/codegangsta/negroni"
+	"gopkg.in/redis.v4"
+
 	"github.com/gorilla/mux"
-	"gopkg.in/redis.v3"
+	"github.com/urfave/negroni"
 )
 
 func createRedisClient(addr string) *(redis.Client) {
@@ -22,22 +23,27 @@ func createRedisClient(addr string) *(redis.Client) {
 func readTodoHandler(rw http.ResponseWriter, req *http.Request) {
 	cmd := createRedisClient("redis-slave:6379").LRange(mux.Vars(req)["key"], -100, 100)
 	if cmd.Err() != nil {
-		http.Error(rw, cmd.Err().Error(), 500)
 		fmt.Println(cmd.Err())
+		http.Error(rw, cmd.Err().Error(), 500)
 	}
+
+	fmt.Println(cmd.Val())
+
 	membersJSON, err := json.MarshalIndent(cmd.Val(), "", "  ")
 	if err != nil {
-		http.Error(rw, err.Error(), 500)
 		fmt.Println(err)
+		http.Error(rw, err.Error(), 500)
 	}
 	rw.Write(membersJSON)
 }
 
 func insertTodoHandler(rw http.ResponseWriter, req *http.Request) {
+	//Insert todo test[negroni]
+	fmt.Printf("Insert %s %s\n", mux.Vars(req)["key"], mux.Vars(req)["value"])
 	cmd := createRedisClient("redis-master:6379").RPush(mux.Vars(req)["key"], mux.Vars(req)["value"])
 	if cmd.Err() != nil {
-		http.Error(rw, cmd.Err().Error(), 500)
 		fmt.Println(cmd.Err())
+		http.Error(rw, cmd.Err().Error(), 500)
 	}
 	readTodoHandler(rw, req)
 }
@@ -45,8 +51,8 @@ func insertTodoHandler(rw http.ResponseWriter, req *http.Request) {
 func deleteTodoHandler(rw http.ResponseWriter, req *http.Request) {
 	cmd := createRedisClient("redis-master:6379").LRem(mux.Vars(req)["key"], 1, mux.Vars(req)["value"])
 	if cmd.Err() != nil {
-		http.Error(rw, cmd.Err().Error(), 500)
 		fmt.Println(cmd.Err())
+		http.Error(rw, cmd.Err().Error(), 500)
 	}
 	readTodoHandler(rw, req)
 }
@@ -69,8 +75,8 @@ func healthCheck(rw http.ResponseWriter, req *http.Request) {
 
 	aliveJSON, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
-		http.Error(rw, err.Error(), 500)
 		fmt.Println(err)
+		http.Error(rw, err.Error(), 500)
 	}
 	rw.Write(aliveJSON)
 }
@@ -78,16 +84,16 @@ func healthCheck(rw http.ResponseWriter, req *http.Request) {
 func responseWithIPs(rw http.ResponseWriter, r *http.Request) {
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		http.Error(rw, err.Error(), 500)
 		fmt.Println(err)
+		http.Error(rw, err.Error(), 500)
 	}
 
 	var addresses []string
 	for _, i := range ifaces {
 		addrs, erro := i.Addrs()
 		if erro != nil {
-			http.Error(rw, err.Error(), 500)
 			fmt.Println(err)
+			http.Error(rw, err.Error(), 500)
 		}
 
 		for _, addr := range addrs {
@@ -110,5 +116,5 @@ func main() {
 
 	n := negroni.Classic()
 	n.UseHandler(r)
-	n.Run(":3000")
+	http.ListenAndServe(":3000", n)
 }
