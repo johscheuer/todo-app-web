@@ -11,11 +11,11 @@ services:
      - redis-master
      - redis-slave
   redis-slave:
-    image: johscheuer/redis-slave:v1
+    image: johscheuer/redis-slave:v2
     depends_on:
      - redis-master
   redis-master:
-    image: johscheuer/redis-master:v1
+    image: johscheuer/redis-master:v2
 
 networks:
   default:
