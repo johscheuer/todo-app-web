@@ -4,7 +4,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: johscheuer/todo-app-web:v2
+    image: johscheuer/todo-app-web
     ports:
      - "3000"
     depends_on:
