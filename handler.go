@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -17,13 +16,7 @@ func readTodoHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	fmt.Println(cmd.Val())
-
-	membersJSON, err := json.MarshalIndent(cmd.Val(), "", "  ")
-	if err != nil {
-		fmt.Println(err)
-		http.Error(rw, err.Error(), 500)
-	}
-	rw.Write(membersJSON)
+	generateJSONResponse(rw, cmd.Val())
 }
 
 func insertTodoHandler(rw http.ResponseWriter, req *http.Request) {
@@ -51,12 +44,7 @@ func healthCheckHandler(rw http.ResponseWriter, req *http.Request) {
 	checkConnection(result, "redis-master", masterConnection, okString)
 	checkConnection(result, "redis-slave", slaveConnection, okString)
 
-	aliveJSON, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		fmt.Println(err)
-		http.Error(rw, err.Error(), 500)
-	}
-	rw.Write(aliveJSON)
+	generateJSONResponse(rw, result)
 }
 
 func whoAmIHandler(rw http.ResponseWriter, r *http.Request) {
@@ -66,20 +54,11 @@ func whoAmIHandler(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), 500)
 	}
 
-	var addresses []string
-	for _, i := range ifaces {
-		addrs, erro := i.Addrs()
-		if erro != nil {
-			fmt.Println(err)
-			http.Error(rw, err.Error(), 500)
-		}
-
-		for _, addr := range addrs {
-			addresses = append(addresses, addr.String())
-		}
-
+	addresses, err := getAllAddresses(ifaces)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(rw, err.Error(), 500)
 	}
 
-	addressJSON, err := json.MarshalIndent(addresses, "", "  ")
-	rw.Write(addressJSON)
+	generateJSONResponse(rw, addresses)
 }
