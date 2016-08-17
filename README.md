@@ -13,7 +13,7 @@ go get -u github.com/johscheuer/todo-app-web
 #### On OSX
 
 ```bash
-CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/todo-app .
+CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -a -installsuffix cgo -o bin/todo-app .
 ```
 
 ### Build the Container
