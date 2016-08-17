@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/johscheuer/todo-app-web.svg?branch=master)](https://travis-ci.org/johscheuer/todo-app-web)
+
 # Example web todo list
 
 This is a simple web todo list for presentations and demos. It's written in Golang + Javascript.
