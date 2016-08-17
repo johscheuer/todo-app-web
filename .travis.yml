@@ -11,12 +11,10 @@ os:
 install:
   - go get -u .
   - go build -ldflags "-s -w" -a -installsuffix cgo -o bin/todo-app .
+  - docker build -t johscheuer/todo-app-web .
 
 services:
   - docker
-
-before_install:
-  - docker build -t johscheuer/todo-app-web .
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
