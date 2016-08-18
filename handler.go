@@ -9,7 +9,7 @@ import (
 )
 
 func readTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	cmd := createRedisClient(slaveConnection).LRange(mux.Vars(req)["key"], -100, 100)
+	cmd := createRedisClient(slaveConnection, slavePassword).LRange(mux.Vars(req)["key"], -100, 100)
 	if cmd.Err() != nil {
 		fmt.Println(cmd.Err())
 		http.Error(rw, cmd.Err().Error(), 500)
@@ -20,7 +20,7 @@ func readTodoHandler(rw http.ResponseWriter, req *http.Request) {
 }
 
 func insertTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	cmd := createRedisClient(masterConnection).RPush(mux.Vars(req)["key"], mux.Vars(req)["value"])
+	cmd := createRedisClient(masterConnection, masterPassword).RPush(mux.Vars(req)["key"], mux.Vars(req)["value"])
 	if cmd.Err() != nil {
 		fmt.Println(cmd.Err())
 		http.Error(rw, cmd.Err().Error(), 500)
@@ -29,7 +29,7 @@ func insertTodoHandler(rw http.ResponseWriter, req *http.Request) {
 }
 
 func deleteTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	cmd := createRedisClient(masterConnection).LRem(mux.Vars(req)["key"], 1, mux.Vars(req)["value"])
+	cmd := createRedisClient(masterConnection, masterPassword).LRem(mux.Vars(req)["key"], 1, mux.Vars(req)["value"])
 	if cmd.Err() != nil {
 		fmt.Println(cmd.Err())
 		http.Error(rw, cmd.Err().Error(), 500)
@@ -41,8 +41,8 @@ func healthCheckHandler(rw http.ResponseWriter, req *http.Request) {
 	okString := "ok"
 	result := map[string]string{"self": okString}
 
-	checkConnection(result, "redis-master", masterConnection, okString)
-	checkConnection(result, "redis-slave", slaveConnection, okString)
+	checkConnection(result, "redis-master", masterConnection, masterPassword, okString)
+	checkConnection(result, "redis-slave", slaveConnection, slavePassword, okString)
 
 	generateJSONResponse(rw, result)
 }

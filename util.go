@@ -9,16 +9,16 @@ import (
 	"gopkg.in/redis.v4"
 )
 
-func createRedisClient(addr string) *(redis.Client) {
+func createRedisClient(addr, password string) *(redis.Client) {
 	return redis.NewClient(&redis.Options{
 		Addr:     addr,
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Password: password,
+		DB:       0, // use default DB
 	})
 }
 
-func checkConnection(result map[string]string, key, connection, okString string) {
-	if _, err := createRedisClient(connection).Ping().Result(); err != nil {
+func checkConnection(result map[string]string, key, connection, password, okString string) {
+	if _, err := createRedisClient(connection, password).Ping().Result(); err != nil {
 		result[key] = err.Error()
 	} else {
 		result[key] = okString
