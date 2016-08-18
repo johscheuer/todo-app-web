@@ -31,4 +31,5 @@ docker push johscheuer/todo-app-web
 
 ```bash
 docker-compose up -d
+go test -tags integration
 ```

@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     image: johscheuer/todo-app-web
     ports:
-     - "3000"
+     - 3000:3000
     depends_on:
      - redis-master
      - redis-slave
