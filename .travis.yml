@@ -8,6 +8,9 @@ go:
 os:
   - linux
 
+services:
+  - docker
+
 env:
   DOCKER_COMPOSE_VERSION: 1.8.0
 
@@ -22,12 +25,10 @@ install:
   - go fmt ./...
   - go vet $(go list ./...)
   - go build -ldflags "-s -w" -a -installsuffix cgo -o bin/todo-app .
-  - docker-compose build 
-  - docker-compose up -d
-  - go test -v -tags integration
+  - docker-compose build
 
-services:
-  - docker
+script:
+  - ./integration_test.sh
 
 #after_success:
 #  - if [ "$TRAVIS_BRANCH" == "master" ]; then
