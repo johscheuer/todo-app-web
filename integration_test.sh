@@ -1,10 +1,11 @@
 #!/bin/bash
+ls -lah ./bin
 
 docker-compose up -d
 
 docker-compose ps
 
-curl http://localhost:3000/health
+docker-compose logs todoApp
 
 go test -v -tags integration
 
