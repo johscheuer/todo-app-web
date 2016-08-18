@@ -1,11 +1,5 @@
 #!/bin/bash
-ls -lah ./bin
-
 docker-compose up -d
-
-docker-compose ps
-
-docker-compose logs todoApp
 
 go test -v -tags integration
 
