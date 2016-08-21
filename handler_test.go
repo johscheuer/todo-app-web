@@ -28,7 +28,7 @@ func TestHealthEndpoint(t *testing.T) {
 	}
 
 	resp, err := getHTTPClient().Get(fmt.Sprintf("%s/health", todoAppServer))
-	if err != nil {
+	if err != nil || resp.StatusCode != 200 {
 		t.Log(err)
 		t.FailNow()
 	}
@@ -49,21 +49,21 @@ func TestInsertReadAndDeleteItem(t *testing.T) {
 	insertItem := "TestCase"
 
 	// Insert Item
-	if _, err := getHTTPClient().Get(fmt.Sprintf("%s/insert/todo/%s", todoAppServer, insertItem)); err != nil {
+	if resp, err := getHTTPClient().Get(fmt.Sprintf("%s/insert/todo/%s", todoAppServer, insertItem)); err != nil || resp.StatusCode != 200 {
 		t.Log(err)
 		t.FailNow()
 	}
 
 	// Read Item
 	readResp, err := getHTTPClient().Get(fmt.Sprintf("%s/read/todo", todoAppServer))
-	if err != nil {
+	if err != nil || readResp.StatusCode != 200 {
 		t.Log(err)
 		t.FailNow()
 	}
 
 	defer readResp.Body.Close()
 	var readResponse []string
-	if err := json.NewDecoder(readResp.Body).Decode(&readResponse); err != nil {
+	if err = json.NewDecoder(readResp.Body).Decode(&readResponse); err != nil {
 		t.Log(err)
 		t.FailNow()
 	}
@@ -74,7 +74,7 @@ func TestInsertReadAndDeleteItem(t *testing.T) {
 
 	// Delete Item
 	deleteResp, err := getHTTPClient().Get(fmt.Sprintf("%s/delete/todo/%s", todoAppServer, insertItem))
-	if err != nil {
+	if err != nil || deleteResp.StatusCode != 200 {
 		t.Log(err)
 		t.FailNow()
 	}
@@ -91,8 +91,14 @@ func TestInsertReadAndDeleteItem(t *testing.T) {
 	}
 }
 
-//TODO func checkResponse
+func TestWhoAmI(t *testing.T) {
+	readResp, err := getHTTPClient().Get(fmt.Sprintf("%s/whoami", todoAppServer))
+	if err != nil || readResp.StatusCode != 200 {
+		t.Log(err)
+		t.FailNow()
+	}
 
-/* TODO Tests for:
-- whoAmIHandler
-*/
+	//TODO we would ned to set a fix IP address to this container
+
+	defer readResp.Body.Close()
+}
