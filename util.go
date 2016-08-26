@@ -119,8 +119,8 @@ func checkMasterConnections(result map[string]string, hostname string) {
 		masterConnections = []string{masterConnection}
 	}
 
-	redisMastersTotal.WithLabelValues(hostname, appVersion).Set(1.0)
-	redisMastersHealthyTotal.WithLabelValues(hostname, appVersion).Set(1.0)
+	redisMastersTotal.WithLabelValues(hostname, appVersion).Set(0.0)
+	redisMastersHealthyTotal.WithLabelValues(hostname, appVersion).Set(0.0)
 
 	for index, connection := range masterConnections {
 		name := fmt.Sprintf("redis-master-%d", index)
