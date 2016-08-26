@@ -38,13 +38,7 @@ func deleteTodoHandler(rw http.ResponseWriter, req *http.Request) {
 }
 
 func healthCheckHandler(rw http.ResponseWriter, req *http.Request) {
-	okString := "ok"
-	result := map[string]string{"self": okString}
-
-	checkConnection(result, "redis-master", masterConnection, masterPassword, okString)
-	checkConnection(result, "redis-slave", slaveConnection, slavePassword, okString)
-
-	generateJSONResponse(rw, result)
+	generateJSONResponse(rw, getHealthStatus())
 }
 
 func whoAmIHandler(rw http.ResponseWriter, r *http.Request) {
