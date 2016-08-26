@@ -22,9 +22,9 @@ func getHTTPClient() *http.Client {
 //TestHealthEndpoint checks if the Health endpoint has the right format
 func TestHealthEndpoint(t *testing.T) {
 	expectedResponse := map[string]string{
-		"redis-master": "ok",
-		"redis-slave":  "ok",
-		"self":         "ok",
+		"redis-master-0": "ok",
+		"redis-slave-0":  "ok",
+		"self":           "ok",
 	}
 
 	resp, err := getHTTPClient().Get(fmt.Sprintf("%s/health", todoAppServer))
