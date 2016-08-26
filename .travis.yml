@@ -24,14 +24,8 @@ install:
   - go get -u .
   - go fmt ./...
   - go vet $(go list ./...)
-  - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -a -installsuffix cgo -o bin/todo-app .
+  - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.appVersion=$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)" -a -installsuffix cgo -o bin/todo-app .
   - docker-compose build
 
 script:
   - ./integration_test.sh
-
-#after_success:
-#  - if [ "$TRAVIS_BRANCH" == "master" ]; then
-#    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-#    docker push johscheuer/todo-app-web;
-#    fi
