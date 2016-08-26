@@ -15,7 +15,7 @@ $ go get -u github.com/johscheuer/todo-app-web
 #### On OSX
 
 ```bash
-$ CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -a -installsuffix cgo -o bin/todo-app .
+$ CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w -X main.appVersion=$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match)" -a -installsuffix cgo -o bin/todo-app .
 ```
 
 ### Build the Container
@@ -30,6 +30,5 @@ $ docker push johscheuer/todo-app-web
 ## Testing
 
 ```bash
-$ docker-compose up -d
-$ go test -tags integration
+$ ./integration_test.sh
 ```
