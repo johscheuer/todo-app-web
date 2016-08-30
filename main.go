@@ -20,6 +20,7 @@ var (
 	masterConnection string
 	masterPassword   string
 	appVersion       string
+	showVersion      bool
 	healthCheckTime  int
 )
 
@@ -34,8 +35,13 @@ func main() {
 	flag.StringVar(&masterPassword, "master-password", "", "The password used to connect to the master")
 	flag.StringVar(&slavePassword, "slave-password", "", "The password used to connect to the slave")
 	flag.IntVar(&healthCheckTime, "health-check", 15, "Period to check all connections")
+	flag.BoolVar(&showVersion, "version", false, "Shows the version")
 	flag.Parse()
 
+	if showVersion {
+		log.Printf("Version: %s\n", appVersion)
+		return
+	}
 	// Iniitialize metrics
 	healthCheckTimer := time.NewTicker(time.Duration(healthCheckTime) * time.Second)
 	quit := make(chan struct{})
@@ -59,6 +65,7 @@ func main() {
 	r.Path("/health").Methods("GET").HandlerFunc(healthCheckHandler)
 	r.Path("/metrics").Methods("GET").Handler(prometheus.Handler())
 	r.Path("/whoami").Methods("GET").HandlerFunc(whoAmIHandler)
+	r.Path("/version").Methods("GET").HandlerFunc(versionHandler)
 
 	n := negroni.Classic()
 	n.UseHandler(r)

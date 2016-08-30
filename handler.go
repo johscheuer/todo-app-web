@@ -56,3 +56,7 @@ func whoAmIHandler(rw http.ResponseWriter, r *http.Request) {
 
 	generateJSONResponse(rw, addresses)
 }
+
+func versionHandler(rw http.ResponseWriter, req *http.Request) {
+	generateJSONResponse(rw, appVersion)
+}
