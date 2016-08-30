@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sync"
 
 	"gopkg.in/redis.v4"
 
@@ -14,6 +15,22 @@ import (
 )
 
 const okString string = "ok"
+
+type checkConnectionResult struct {
+	results map[string]string
+	total   int
+	healthy int
+	name    string
+}
+
+func newCheckConnectionResult(name string) *checkConnectionResult {
+	return &checkConnectionResult{
+		results: map[string]string{},
+		total:   0,
+		healthy: 0,
+		name:    name,
+	}
+}
 
 var redisMastersTotal = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
@@ -104,58 +121,64 @@ func getHealthStatus() map[string]string {
 		hostname = "UNKNOWN"
 	}
 
-	//TODO can we generalize this to use only one function?
-	checkMasterConnections(result, hostname)
-	checkSlaveConnections(result, hostname)
+	var wg sync.WaitGroup
+	results := make(chan *checkConnectionResult, 2)
+	wg.Add(2)
+	go func() {
+		results <- checkConnections("redis-master", hostname, masterConnection)
+		wg.Done()
+	}()
+
+	go func() {
+		results <- checkConnections("redis-slave", hostname, slaveConnection)
+		wg.Done()
+	}()
+	wg.Wait()
+
+	close(results)
+
+	// Merge Results
+	for res := range results {
+		if res.name == "redis-master" {
+			redisMastersTotal.WithLabelValues(hostname, appVersion).Set(float64(res.total))
+			redisMastersHealthyTotal.WithLabelValues(hostname, appVersion).Set(float64(res.healthy))
+		}
+		if res.name == "redis-slave" {
+			redisSlavesTotal.WithLabelValues(hostname, appVersion).Set(float64(res.total))
+			redisSlavesHealthyTotal.WithLabelValues(hostname, appVersion).Set(float64(res.healthy))
+		}
+
+		for k, v := range res.results {
+			result[k] = v
+		}
+	}
 
 	return result
 }
 
-func checkMasterConnections(result map[string]string, hostname string) {
-	masterConnections, err := getAllConnections(masterConnection)
+func checkConnections(name, hostname, connection string) *checkConnectionResult {
+	res := newCheckConnectionResult(name)
+	masterConnections, err := getAllConnections(connection)
 	if err != nil {
 		log.Println(err)
 		// Simple fallback
-		masterConnections = []string{masterConnection}
+		masterConnections = []string{connection}
 	}
-
-	redisMastersTotal.WithLabelValues(hostname, appVersion).Set(0.0)
-	redisMastersHealthyTotal.WithLabelValues(hostname, appVersion).Set(0.0)
 
 	for index, connection := range masterConnections {
-		name := fmt.Sprintf("redis-master-%d", index)
-		result[name] = checkConnection(connection, masterPassword)
-		redisMastersTotal.WithLabelValues(hostname, appVersion).Add(1.0)
+		conName := fmt.Sprintf("%s-%d", name, index)
+		res.results[conName] = checkConnection(connection, masterPassword)
+		res.total++
 
-		if result[name] == okString {
-			redisMastersHealthyTotal.WithLabelValues(hostname, appVersion).Add(1.0)
+		if res.results[conName] == okString {
+			res.healthy++
 		}
 	}
 
+	return res
 }
 
-func checkSlaveConnections(result map[string]string, hostname string) {
-	slaveConnections, err := getAllConnections(slaveConnection)
-	if err != nil {
-		log.Println(err)
-		// Simple fallback
-		slaveConnections = []string{slaveConnection}
-	}
-
-	redisSlavesTotal.WithLabelValues(hostname, appVersion).Set(0.0)
-	redisSlavesHealthyTotal.WithLabelValues(hostname, appVersion).Set(0.0)
-
-	for index, connection := range slaveConnections {
-		name := fmt.Sprintf("redis-slave-%d", index)
-		result[name] = checkConnection(connection, slavePassword)
-		redisSlavesTotal.WithLabelValues(hostname, appVersion).Add(1.0)
-
-		if result[name] == okString {
-			redisSlavesHealthyTotal.WithLabelValues(hostname, appVersion).Add(1.0)
-		}
-	}
-}
-
+//TODO add function with SRV lookup
 func getAllConnections(connection string) ([]string, error) {
 	connections := []string{}
 
