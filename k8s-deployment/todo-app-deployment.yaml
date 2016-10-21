@@ -17,6 +17,7 @@ spec:
       containers:
         - name: "todo-app"
           image: "johscheuer/todo-app-web:v2"
+          command: ["./todo-app"]
           args: ["-master", "${REDIS_MASTER_URL}", "-slave", "${REDIS_SLAVE_URL}"]
           resources:
             limits:
