@@ -17,6 +17,7 @@ spec:
       containers:
         - name: "todo-app"
           image: "johscheuer/todo-app-web:v2"
+          args: ["-master", "${REDIS_MASTER_URL}", "-slave", "${REDIS_SLAVE_URL}"]
           resources:
             limits:
               cpu: 100m
@@ -24,6 +25,17 @@ spec:
             requests:
               cpu: 100m
               memory: 500Mi
+          env:
+            - name: REDIS_MASTER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: redis.master
+            - name: REDIS_SLAVE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-app-config
+                  key: redis.slave
           ports:
             - containerPort: 3000
               protocol: "TCP"
