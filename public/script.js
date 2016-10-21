@@ -49,3 +49,12 @@ $(document).ready(function() {
       });
   })();
 });
+
+$(document).ready(function() {
+   $.getJSON("version", function(data) {
+    if (data == null) {
+      return
+    }
+    $("#footer-version").text("Version: " + data["version"]);
+  });
+});

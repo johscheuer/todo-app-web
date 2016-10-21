@@ -58,5 +58,5 @@ func whoAmIHandler(rw http.ResponseWriter, r *http.Request) {
 }
 
 func versionHandler(rw http.ResponseWriter, req *http.Request) {
-	generateJSONResponse(rw, appVersion)
+	generateJSONResponse(rw, map[string]string{"version": appVersion})
 }
