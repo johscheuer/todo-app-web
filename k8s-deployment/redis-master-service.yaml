@@ -1,0 +1,14 @@
+kind: "Service"
+apiVersion: "v1"
+metadata:
+  name: "redis-master"
+  namespace: todo-app
+  labels:
+    name: "redis-master"
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: "TCP"
+  selector:
+    name: "redis-master"

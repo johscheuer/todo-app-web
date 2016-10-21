@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: todo-app
+  namespace: todo-app
+  labels:
+    name: todo-app
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: todo-app
+      namespace: todo-app
+      labels:
+        name: todo-app
+    spec:
+      containers:
+        - name: "todo-app"
+          image: "johscheuer/todo-app-web:v2"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 500Mi
+            requests:
+              cpu: 100m
+              memory: 500Mi
+          ports:
+            - containerPort: 3000
+              protocol: "TCP"
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: 3000
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 5

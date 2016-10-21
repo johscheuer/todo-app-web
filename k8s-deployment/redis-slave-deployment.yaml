@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-slave
+  namespace: todo-app
+  labels:
+    name: redis-slave
+spec:
+  replicas: 2
+  template:
+    metadata:
+      name: redis-slave
+      namespace: todo-app
+      labels:
+        name: redis-slave
+    spec:
+      containers:
+        - name: "slave"
+          image: "johscheuer/redis-slave:v2"
+          resources:
+            limits:
+              cpu: 100m
+            requests:
+              cpu: 100m
+          ports:
+            - containerPort: 6379
+              protocol: "TCP"

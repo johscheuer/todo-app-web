@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-master
+  namespace: todo-app
+  labels:
+    name: redis-master
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: redis-master
+      namespace: todo-app
+      labels:
+        name: redis-master
+    spec:
+      containers:
+        - name: "redis-master"
+          image: "johscheuer/redis-master:v2"
+          resources:
+            limits:
+              cpu: 100m
+            requests:
+              cpu: 100m
+          ports:
+            - containerPort: 6379
+              protocol: "TCP"
