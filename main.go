@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/johscheuer/todo-app-web/tododb"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/urfave/negroni"
 )
@@ -22,12 +23,8 @@ var (
 	appVersion       string
 	showVersion      bool
 	healthCheckTime  int
+	database         tododb.TodoDB
 )
-
-func init() {
-	// Metrics have to be registered to be exposed:
-	registerMetrics()
-}
 
 func main() {
 	flag.StringVar(&masterConnection, "master", "redis-master:6379", "The connection string to the Redis master as <hostname/ip>:<port>")
@@ -42,6 +39,11 @@ func main() {
 		log.Printf("Version: %s\n", appVersion)
 		return
 	}
+
+	// TODO check here db driver (add cases)
+	database = tododb.NewRedisDB(masterConnection, masterPassword, slaveConnection, slavePassword, appVersion)
+	database.RegisterMetrics()
+
 	// Iniitialize metrics
 	healthCheckTimer := time.NewTicker(time.Duration(healthCheckTime) * time.Second)
 	quit := make(chan struct{})
@@ -50,7 +52,7 @@ func main() {
 			select {
 			case <-healthCheckTimer.C:
 				log.Println("Called Health check")
-				getHealthStatus()
+				database.GetHealthStatus()
 			case <-quit:
 				healthCheckTimer.Stop()
 				return
