@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
-	"net/http"
 )
 
 func getAllAddresses(ifaces []net.Interface) ([]string, error) {
@@ -22,13 +20,4 @@ func getAllAddresses(ifaces []net.Interface) ([]string, error) {
 	}
 
 	return addresses, nil
-}
-
-func generateJSONResponse(rw http.ResponseWriter, toMarshal interface{}) {
-	responseJSON, err := json.MarshalIndent(toMarshal, "", "  ")
-	if err != nil {
-		fmt.Println(err)
-		http.Error(rw, err.Error(), 500)
-	}
-	rw.Write(responseJSON)
 }

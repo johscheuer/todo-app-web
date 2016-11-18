@@ -23,12 +23,28 @@ const redisKey = "todo"
 
 var _ TodoDB = RedisDB{}
 
-func NewRedisDB(master, masterPassword, slave, slavePassword, appVersion string) RedisDB {
+func NewRedisDB(config map[string]string, appVersion string) RedisDB {
+	if _, exists := config["master"]; !exists {
+		config["master"] = "redis-master:6379"
+	}
+
+	if _, exists := config["masterPassword"]; !exists {
+		config["masterPassword"] = ""
+	}
+
+	if _, exists := config["slave"]; !exists {
+		config["slave"] = "redis-slave:6379"
+	}
+
+	if _, exists := config["slavePassword"]; !exists {
+		config["slavePassword"] = ""
+	}
+
 	return RedisDB{
-		master:         master,
-		masterPassword: masterPassword,
-		slave:          slave,
-		slavePassword:  slavePassword,
+		master:         config["master"],
+		masterPassword: config["masterPassword"],
+		slave:          config["slave"],
+		slavePassword:  config["slavePassword"],
 		appVersion:     appVersion,
 	}
 }

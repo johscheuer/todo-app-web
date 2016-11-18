@@ -3,35 +3,34 @@ package main
 import (
 	"flag"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/contrib/static"
+	"github.com/gin-gonic/gin"
 	"github.com/johscheuer/todo-app-web/tododb"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/urfave/negroni"
 )
 
 var (
-	slaveConnection  string
-	slavePassword    string
-	masterConnection string
-	masterPassword   string
-	appVersion       string
-	showVersion      bool
-	healthCheckTime  int
-	database         tododb.TodoDB
+	appVersion  string
+	showVersion bool
+	database    tododb.TodoDB
 )
 
 func main() {
-	flag.StringVar(&masterConnection, "master", "redis-master:6379", "The connection string to the Redis master as <hostname/ip>:<port>")
-	flag.StringVar(&slaveConnection, "slave", "redis-slave:6379", "The connection string to the Redis slave as <hostname/ip>:<port>")
-	flag.StringVar(&masterPassword, "master-password", "", "The password used to connect to the master")
-	flag.StringVar(&slavePassword, "slave-password", "", "The password used to connect to the slave")
-	flag.IntVar(&healthCheckTime, "health-check", 15, "Period to check all connections")
+	var config TodoAppConfig
+
+	//TODO
+	config = TodoAppConfig{
+		DBDriver: "redis",
+		DBConfig: map[string]string{},
+	}
+	//configFile := flag.String()
+	//gin.SetMode(gin.ReleaseMode)
 	flag.BoolVar(&showVersion, "version", false, "Shows the version")
 	flag.Parse()
 
@@ -40,38 +39,43 @@ func main() {
 		return
 	}
 
-	// TODO check here db driver (add cases)
-	database = tododb.NewRedisDB(masterConnection, masterPassword, slaveConnection, slavePassword, appVersion)
+	if strings.ToLower(config.DBDriver) == "mysql" {
+		database = tododb.NewMySQLDB(config.DBConfig, appVersion)
+	} else if strings.ToLower(config.DBDriver) == "redis" {
+		database = tododb.NewRedisDB(config.DBConfig, appVersion)
+	}
+
 	database.RegisterMetrics()
 
 	// Iniitialize metrics
-	healthCheckTimer := time.NewTicker(time.Duration(healthCheckTime) * time.Second)
 	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-healthCheckTimer.C:
-				log.Println("Called Health check")
-				database.GetHealthStatus()
-			case <-quit:
-				healthCheckTimer.Stop()
-				return
+	if config.HealthCheckTime > 0 {
+		healthCheckTimer := time.NewTicker(time.Duration(config.HealthCheckTime) * time.Second)
+		go func() {
+			for {
+				select {
+				case <-healthCheckTimer.C:
+					log.Println("Called Health check")
+					database.GetHealthStatus()
+				case <-quit:
+					healthCheckTimer.Stop()
+					return
+				}
 			}
-		}
-	}()
+		}()
+	}
 
-	r := mux.NewRouter()
-	r.Path("/read/{key}").Methods("GET").HandlerFunc(readTodoHandler)
-	r.Path("/insert/{key}/{value}").Methods("GET").HandlerFunc(insertTodoHandler)
-	r.Path("/delete/{key}/{value}").Methods("GET").HandlerFunc(deleteTodoHandler)
-	r.Path("/health").Methods("GET").HandlerFunc(healthCheckHandler)
-	r.Path("/metrics").Methods("GET").Handler(prometheus.Handler())
-	r.Path("/whoami").Methods("GET").HandlerFunc(whoAmIHandler)
-	r.Path("/version").Methods("GET").HandlerFunc(versionHandler)
+	router := gin.Default()
+	router.GET("/read/todo", readTodoHandler)
+	router.GET("/insert/todo/:value", insertTodoHandler)
+	router.GET("/delete/todo/:value", deleteTodoHandler)
+	router.GET("/health", healthCheckHandler)
+	router.GET("/metrics", gin.WrapH(prometheus.Handler()))
+	router.GET("/whoami", whoAmIHandler)
+	router.GET("/version", versionHandler)
 
-	n := negroni.Classic()
-	n.UseHandler(r)
-	http.ListenAndServe(":3000", n)
+	router.Use(static.Serve("/", static.LocalFile("./public", true)))
+	router.Run(":3000")
 
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
