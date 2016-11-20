@@ -51,6 +51,12 @@ func NewRedisDB(config map[string]string, appVersion string) RedisDB {
 
 func (redisDB RedisDB) GetAllTodos() ([]string, error) {
 	cmd := createRedisClient(redisDB.slave, redisDB.slavePassword).LRange(redisKey, -100, 100)
+
+	// Fallback to read from master
+	if cmd.Err() != nil {
+		log.Println("Fallback using Redis Master")
+		cmd = createRedisClient(redisDB.master, redisDB.masterPassword).LRange(redisKey, -100, 100)
+	}
 	return cmd.Val(), cmd.Err()
 }
 
