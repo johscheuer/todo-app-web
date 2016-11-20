@@ -5,58 +5,74 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-func readTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	cmd := createRedisClient(slaveConnection, slavePassword).LRange(mux.Vars(req)["key"], -100, 100)
-	if cmd.Err() != nil {
-		fmt.Println(cmd.Err())
-		http.Error(rw, cmd.Err().Error(), 500)
+func readTodoHandler(c *gin.Context) {
+	todos, err := database.GetAllTodos()
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"errors": err.Error(),
+		})
+		return
+	}
+	fmt.Println(todos)
+	c.JSON(http.StatusOK, todos)
+}
+
+func insertTodoHandler(c *gin.Context) {
+	if err := database.SaveTodo(c.Param("value")); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"errors": err.Error(),
+		})
+		return
 	}
 
-	fmt.Println(cmd.Val())
-	generateJSONResponse(rw, cmd.Val())
+	readTodoHandler(c)
 }
 
-func insertTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	cmd := createRedisClient(masterConnection, masterPassword).RPush(mux.Vars(req)["key"], mux.Vars(req)["value"])
-	if cmd.Err() != nil {
-		fmt.Println(cmd.Err())
-		http.Error(rw, cmd.Err().Error(), 500)
+func deleteTodoHandler(c *gin.Context) {
+	if err := database.DeleteTodo(c.Param("value")); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"errors": err.Error(),
+		})
+		return
 	}
-	readTodoHandler(rw, req)
+
+	readTodoHandler(c)
 }
 
-func deleteTodoHandler(rw http.ResponseWriter, req *http.Request) {
-	cmd := createRedisClient(masterConnection, masterPassword).LRem(mux.Vars(req)["key"], 1, mux.Vars(req)["value"])
-	if cmd.Err() != nil {
-		fmt.Println(cmd.Err())
-		http.Error(rw, cmd.Err().Error(), 500)
-	}
-	readTodoHandler(rw, req)
+func healthCheckHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, database.GetHealthStatus())
 }
 
-func healthCheckHandler(rw http.ResponseWriter, req *http.Request) {
-	generateJSONResponse(rw, getHealthStatus())
-}
-
-func whoAmIHandler(rw http.ResponseWriter, r *http.Request) {
+func whoAmIHandler(c *gin.Context) {
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		fmt.Println(err)
-		http.Error(rw, err.Error(), 500)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"errors": err.Error(),
+		})
+		return
 	}
 
 	addresses, err := getAllAddresses(ifaces)
 	if err != nil {
 		fmt.Println(err)
-		http.Error(rw, err.Error(), 500)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"errors": err.Error(),
+		})
+		return
 	}
 
-	generateJSONResponse(rw, addresses)
+	c.JSON(http.StatusOK, addresses)
 }
 
-func versionHandler(rw http.ResponseWriter, req *http.Request) {
-	generateJSONResponse(rw, map[string]string{"version": appVersion})
+func versionHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"version": appVersion,
+	})
 }
