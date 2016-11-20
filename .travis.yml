@@ -12,7 +12,7 @@ services:
   - docker
 
 env:
-  DOCKER_COMPOSE_VERSION: 1.8.0
+  DOCKER_COMPOSE_VERSION: 1.9.0
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
@@ -29,3 +29,9 @@ install:
 
 script:
   - ./integration_test.sh
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push johscheuer/todo-app-web;
+    fi
