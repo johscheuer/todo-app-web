@@ -7,8 +7,9 @@ import (
 	"os"
 	"sync"
 
+	redis "gopkg.in/redis.v5"
+
 	"github.com/prometheus/client_golang/prometheus"
-	"gopkg.in/redis.v4"
 )
 
 type RedisDB struct {
