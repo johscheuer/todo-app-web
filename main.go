@@ -22,21 +22,19 @@ var (
 )
 
 func main() {
-	var config TodoAppConfig
-
-	//TODO
-	config = TodoAppConfig{
-		DBDriver: "redis",
-		DBConfig: map[string]string{},
-	}
-	//configFile := flag.String()
 	//gin.SetMode(gin.ReleaseMode)
+	configFile := flag.String("config-file", "./default.config", "Path to the configuration file")
 	flag.BoolVar(&showVersion, "version", false, "Shows the version")
 	flag.Parse()
 
 	if showVersion {
 		log.Printf("Version: %s\n", appVersion)
 		return
+	}
+
+	config, err := readConfig(*configFile)
+	if err != nil {
+		log.Println(err)
 	}
 
 	if strings.ToLower(config.DBDriver) == "mysql" {

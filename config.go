@@ -2,9 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"os"
+	"log"
 )
 
 type TodoAppConfig struct {
@@ -13,22 +12,25 @@ type TodoAppConfig struct {
 	DBConfig        map[string]string
 }
 
-func readConfig(configFile string) *TodoAppConfig {
+func readConfig(configFile string) (*TodoAppConfig, error) {
 	file, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		fmt.Printf("File error: %v\n", err)
-		os.Exit(1)
+		return &TodoAppConfig{
+			DBDriver: "redis",
+			DBConfig: map[string]string{},
+		}, err
 	}
-	fmt.Printf("%s\n", string(file))
-
 	config := &TodoAppConfig{}
 	json.Unmarshal(file, config)
-	return config
-}
 
-/*
-	flag.StringVar(&masterConnection, "master", "redis-master:6379", "The connection string to the Redis master as <hostname/ip>:<port>")
-	flag.StringVar(&slaveConnection, "slave", "redis-slave:6379", "The connection string to the Redis slave as <hostname/ip>:<port>")
-	flag.StringVar(&masterPassword, "master-password", "", "The password used to connect to the master")
-	flag.StringVar(&slavePassword, "slave-password", "", "The password used to connect to the slave")
-*/
+	if config.DBDriver == "" {
+		log.Println("Use redis as default")
+		config.DBDriver = "redis"
+	}
+
+	if config.DBConfig == nil {
+		config.DBConfig = map[string]string{}
+	}
+
+	return config, nil
+}
