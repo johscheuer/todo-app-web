@@ -5,11 +5,14 @@ services:
       context: ./
       dockerfile: Dockerfile
     image: johscheuer/todo-app-web
+    command: ["./todo-app", "-config-file", "/etc/todo-app/redis.config"]
     ports:
      - 3000:3000
     depends_on:
      - redis-master
      - redis-slave
+    volumes:
+     - ./configs/redis.config:/etc/todo-app/redis.config:ro
   redis-slave:
     image: johscheuer/redis-slave:v2
     depends_on:
