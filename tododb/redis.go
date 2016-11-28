@@ -20,7 +20,10 @@ type RedisDB struct {
 	appVersion     string
 }
 
-const redisKey = "todo"
+const (
+	redisKey    string    = "todo"
+	okString    string    = "ok"
+)
 
 var _ TodoDB = RedisDB{}
 
@@ -80,6 +83,7 @@ func createRedisClient(addr, password string) *(redis.Client) {
 }
 
 func (redisDB RedisDB) RegisterMetrics() {
+	log.Println("Registered Redis Metrics")
 	prometheus.MustRegister(redisMastersTotal)
 	prometheus.MustRegister(redisMastersHealthyTotal)
 	prometheus.MustRegister(redisSlavesTotal)
@@ -126,26 +130,20 @@ func (redisDB RedisDB) GetHealthStatus() map[string]string {
 		hostname = "UNKNOWN"
 	}
 
+	redisMasterHost := getHostnameFromConnection(redisDB.master, "redis-master")
+	redisSlaveHost := getHostnameFromConnection(redisDB.slave, "redis-slave")
 	var wg sync.WaitGroup
 	results := make(chan *checkConnectionResult, 2)
 	wg.Add(2)
 	go func() {
-		host, _, err := net.SplitHostPort(redisDB.master)
-		if err != nil {
-			host = "redis-master"
-			fmt.Println(err)
-		}
-		results <- checkConnections(host, hostname, redisDB.master, redisDB.masterPassword)
+
+		results <- checkConnections(redisMasterHost, hostname, redisDB.master, redisDB.masterPassword)
 		wg.Done()
 	}()
 
 	go func() {
-		host, _, err := net.SplitHostPort(redisDB.slave)
-		if err != nil {
-			host = "redis-slave"
-			fmt.Println(err)
-		}
-		results <- checkConnections(host, hostname, redisDB.slave, redisDB.slavePassword)
+
+		results <- checkConnections(redisSlaveHost, hostname, redisDB.slave, redisDB.slavePassword)
 		wg.Done()
 	}()
 	wg.Wait()
@@ -154,11 +152,11 @@ func (redisDB RedisDB) GetHealthStatus() map[string]string {
 
 	// Merge Results
 	for res := range results {
-		if res.name == "redis-master" {
+		if res.name == redisMasterHost {
 			redisMastersTotal.WithLabelValues(hostname, redisDB.appVersion).Set(float64(res.total))
 			redisMastersHealthyTotal.WithLabelValues(hostname, redisDB.appVersion).Set(float64(res.healthy))
 		}
-		if res.name == "redis-slave" {
+		if res.name == redisSlaveHost {
 			redisSlavesTotal.WithLabelValues(hostname, redisDB.appVersion).Set(float64(res.total))
 			redisSlavesHealthyTotal.WithLabelValues(hostname, redisDB.appVersion).Set(float64(res.healthy))
 		}
@@ -171,13 +169,22 @@ func (redisDB RedisDB) GetHealthStatus() map[string]string {
 	return result
 }
 
-const okString string = "ok"
-
 type checkConnectionResult struct {
-	results map[string]string
-	total   int
-	healthy int
-	name    string
+	results    map[string]string
+	total      int
+	healthy    int
+	name       string
+}
+
+
+func getHostnameFromConnection(connection, defaultHost string) string {
+	host, _, err := net.SplitHostPort(connection)
+	if err != nil {
+		host = defaultHost
+		fmt.Println(err)
+	}
+
+	return host
 }
 
 func newCheckConnectionResult(name string) *checkConnectionResult {
