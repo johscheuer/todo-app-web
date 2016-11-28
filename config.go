@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 type TodoAppConfig struct {
 	HealthCheckTime int
 	DBDriver        string
 	DBConfig        map[string]string
+	ReleaseMode     string
 }
 
 func readConfig(configFile string) (*TodoAppConfig, error) {
@@ -30,6 +33,10 @@ func readConfig(configFile string) (*TodoAppConfig, error) {
 
 	if config.DBConfig == nil {
 		config.DBConfig = map[string]string{}
+	}
+
+	if config.ReleaseMode == "" {
+		config.ReleaseMode = gin.DebugMode
 	}
 
 	return config, nil

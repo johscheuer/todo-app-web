@@ -22,7 +22,6 @@ var (
 )
 
 func main() {
-	//gin.SetMode(gin.ReleaseMode)
 	configFile := flag.String("config-file", "./default.config", "Path to the configuration file")
 	flag.BoolVar(&showVersion, "version", false, "Shows the version")
 	flag.Parse()
@@ -37,6 +36,7 @@ func main() {
 		log.Println(err)
 	}
 
+	gin.SetMode(config.ReleaseMode)
 	if strings.ToLower(config.DBDriver) == "mysql" {
 		database = tododb.NewMySQLDB(config.DBConfig, appVersion)
 	} else if strings.ToLower(config.DBDriver) == "redis" {
