@@ -14,3 +14,4 @@ data:
 kind: ConfigMap
 metadata:
   name: todo-app-config
+  namespace: todo-app
