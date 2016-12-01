@@ -70,6 +70,11 @@
 			"Rev": "abf152e5f3e97f2fafac028d2cc06c1feb87ffa5"
 		},
 		{
+			"ImportPath": "github.com/uber/tchannel-go/testutils/goroutines",
+			"Comment": "v1.0.6-355-g90a6599",
+			"Rev": "90a65999799767a4bd9683d2649dc551e0092ead"
+		},
+		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "62685c2d7ca23c807425dca88b11a3e2323dab41"
 		},
