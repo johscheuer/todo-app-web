@@ -51,23 +51,32 @@ func NewRedisDB(config map[string]string, appVersion string) RedisDB {
 }
 
 func (redisDB RedisDB) GetAllTodos() ([]string, error) {
-	cmd := createRedisClient(redisDB.slave, redisDB.slavePassword).LRange(redisKey, -100, 100)
+	client := createRedisClient(redisDB.slave, redisDB.slavePassword)
+	defer client.Close()
+	cmd := client.LRange(redisKey, -100, 100)
 
 	// Fallback to read from master
 	if cmd.Err() != nil {
 		log.Println("Fallback using Redis Master")
-		cmd = createRedisClient(redisDB.master, redisDB.masterPassword).LRange(redisKey, -100, 100)
+		client.Close()
+		client = createRedisClient(redisDB.master, redisDB.masterPassword)
+		cmd = client.LRange(redisKey, -100, 100)
 	}
 	return cmd.Val(), cmd.Err()
 }
 
 func (redisDB RedisDB) SaveTodo(todo string) error {
-	cmd := createRedisClient(redisDB.master, redisDB.masterPassword).RPush(redisKey, todo)
+	client := createRedisClient(redisDB.master, redisDB.masterPassword)
+	defer client.Close()
+	cmd := client.RPush(redisKey, todo)
 	return cmd.Err()
 }
 
 func (redisDB RedisDB) DeleteTodo(todo string) error {
-	cmd := createRedisClient(redisDB.master, redisDB.masterPassword).LRem(redisKey, 1, todo)
+	client := createRedisClient(redisDB.master, redisDB.masterPassword)
+	defer client.Close()
+	cmd := client.LRem(redisKey, 1, todo)
+
 	return cmd.Err()
 }
 
@@ -190,7 +199,9 @@ func newCheckConnectionResult(name string) *checkConnectionResult {
 }
 
 func checkConnection(connection string, password string) string {
-	if _, err := createRedisClient(connection, password).Ping().Result(); err != nil {
+	client := createRedisClient(connection, password)
+	defer client.Close()
+	if _, err := client.Ping().Result(); err != nil {
 		return err.Error()
 	}
 

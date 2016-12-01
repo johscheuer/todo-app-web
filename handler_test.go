@@ -6,21 +6,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/uber/tchannel-go/testutils/goroutines"
 )
 
 var todoAppServer = "http://localhost:3000"
 
 func getHTTPClient() *http.Client {
 	return &http.Client{
-		Timeout: time.Duration(30 * time.Second),
+		Timeout: time.Duration(1 * time.Second),
 	}
 }
 
 //TestHealthEndpoint checks if the Health endpoint has the right format
 func TestHealthEndpoint(t *testing.T) {
+	defer validateGoRoutines()
+
 	expectedResponse := map[string]string{
 		"redis-master-0": "ok",
 		"redis-slave-0":  "ok",
@@ -46,6 +51,7 @@ func TestHealthEndpoint(t *testing.T) {
 }
 
 func TestInsertReadAndDeleteItem(t *testing.T) {
+	defer validateGoRoutines()
 	insertItem := "TestCase"
 
 	// Insert Item
@@ -89,9 +95,11 @@ func TestInsertReadAndDeleteItem(t *testing.T) {
 	if !reflect.DeepEqual([]string{}, deleteResponse) {
 		t.FailNow()
 	}
+
 }
 
 func TestWhoAmI(t *testing.T) {
+	defer validateGoRoutines()
 	readResp, err := getHTTPClient().Get(fmt.Sprintf("%s/whoami", todoAppServer))
 	if err != nil || readResp.StatusCode != 200 {
 		t.Log(err)
@@ -99,6 +107,15 @@ func TestWhoAmI(t *testing.T) {
 	}
 
 	//TODO we would ned to set a fix IP address to this container
-
 	defer readResp.Body.Close()
+}
+
+func validateGoRoutines() {
+	if err := goroutines.IdentifyLeaks(&goroutines.VerifyOpts{
+		Excludes: []string{
+			"net/http",
+		},
+	}); err != nil {
+		fmt.Fprintf(os.Stderr, "Found goroutine leaks on successful test run: %v", err)
+	}
 }

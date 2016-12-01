@@ -3,10 +3,7 @@ package main
 import (
 	"flag"
 	"log"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/gin-gonic/contrib/static"
@@ -47,6 +44,7 @@ func main() {
 
 	// Iniitialize metrics
 	quit := make(chan struct{})
+	defer close(quit)
 	if config.HealthCheckTime > 0 {
 		healthCheckTimer := time.NewTicker(time.Duration(config.HealthCheckTime) * time.Second)
 		go func() {
@@ -74,9 +72,4 @@ func main() {
 
 	router.Use(static.Serve("/", static.LocalFile("./public", true)))
 	router.Run(":3000")
-
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	log.Println(<-ch)
-	close(quit)
 }
