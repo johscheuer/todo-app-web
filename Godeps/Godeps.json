@@ -44,6 +44,10 @@
 			"Rev": "fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a"
 		},
 		{
+			"ImportPath": "github.com/mcuadros/go-gin-prometheus",
+			"Rev": "62e9326a4be5a839ea6d5093c34728125f58d9db"
+		},
+		{
 			"ImportPath": "github.com/prometheus/client_golang/prometheus",
 			"Comment": "0.7.0-91-g52437c8",
 			"Rev": "52437c81da6b127a9925d17eb3a382a2e5fd395e"

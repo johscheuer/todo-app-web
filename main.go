@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/johscheuer/todo-app-web/tododb"
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/mcuadros/go-gin-prometheus"
 )
 
 var (
@@ -40,6 +40,7 @@ func main() {
 		database = tododb.NewRedisDB(config.DBConfig, appVersion)
 	}
 
+	p := ginprometheus.NewPrometheus("gin")
 	database.RegisterMetrics()
 
 	// Iniitialize metrics
@@ -62,11 +63,12 @@ func main() {
 	}
 
 	router := gin.Default()
+
+	p.Use(router)
 	router.GET("/read/todo", readTodoHandler)
 	router.GET("/insert/todo/:value", insertTodoHandler)
 	router.GET("/delete/todo/:value", deleteTodoHandler)
 	router.GET("/health", healthCheckHandler)
-	router.GET("/metrics", gin.WrapH(prometheus.Handler()))
 	router.GET("/whoami", whoAmIHandler)
 	router.GET("/version", versionHandler)
 

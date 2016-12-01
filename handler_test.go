@@ -46,6 +46,7 @@ func TestHealthEndpoint(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedResponse, Response) {
+		t.Logf("Expected: %v \nGot: %v", expectedResponse, Response)
 		t.Fail()
 	}
 }
