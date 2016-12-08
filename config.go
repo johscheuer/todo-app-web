@@ -19,8 +19,9 @@ func readConfig(configFile string) (*TodoAppConfig, error) {
 	file, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		return &TodoAppConfig{
-			DBDriver: "redis",
-			DBConfig: map[string]string{},
+			DBDriver:    "redis",
+			DBConfig:    map[string]string{},
+			ReleaseMode: gin.DebugMode,
 		}, err
 	}
 	config := &TodoAppConfig{}
@@ -39,5 +40,5 @@ func readConfig(configFile string) (*TodoAppConfig, error) {
 		config.ReleaseMode = gin.DebugMode
 	}
 
-	return config, nil
+	return config, err
 }
