@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: todo-app
@@ -20,7 +20,7 @@ spec:
           name: todo-app-config
       containers:
         - name: "todo-app"
-          image: "johscheuer/todo-app-web:v5"
+          image: "johscheuer/todo-app-web:v6"
           command: ["./todo-app"]
           args: ["-config-file", "/etc/todo-app/redis.config"]
           resources:
