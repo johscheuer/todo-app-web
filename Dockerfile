@@ -1,7 +1,10 @@
-FROM alpine:3.4
-MAINTAINER Johannes M. Scheuermann <joh.scheuer@gmail.com>
+FROM golang:1.12.5-stretch as Builder
+WORKDIR /go/src/github.com/johscheuer/todo-app-web/
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o todo-app .
 
-COPY ./bin/todo-app /app/todo-app
+FROM gcr.io/distroless/base
+COPY --from=builder /go/src/github.com/johscheuer/todo-app-web/todo-app /app/todo-app
 COPY ./public /app/public
 
 WORKDIR /app

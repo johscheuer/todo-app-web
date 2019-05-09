@@ -1,18 +1,21 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todo-app
   namespace: todo-app
   labels:
-    name: todo-app
+    app: todo-app
 spec:
   replicas: 3
+  selector:
+    matchLabels:
+      app: todo-app
   template:
     metadata:
       name: todo-app
       namespace: todo-app
       labels:
-        name: todo-app
+        app: todo-app
     spec:
       volumes:
       - name: todo-app-config

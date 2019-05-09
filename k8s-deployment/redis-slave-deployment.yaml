@@ -1,18 +1,21 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis-slave
   namespace: todo-app
   labels:
-    name: redis-slave
+    app: redis-slave
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      app: redis-slave
   template:
     metadata:
       name: redis-slave
       namespace: todo-app
       labels:
-        name: redis-slave
+        app: redis-slave
     spec:
       containers:
         - name: "slave"
