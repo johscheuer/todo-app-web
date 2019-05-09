@@ -4,7 +4,7 @@ metadata:
   name: "redis-master"
   namespace: todo-app
   labels:
-    name: "redis-master"
+    app: "redis-master"
 spec:
   ports:
     - port: 6379

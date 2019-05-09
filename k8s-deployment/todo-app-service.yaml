@@ -4,7 +4,7 @@ metadata:
   name: "todo-app"
   namespace: todo-app
   labels:
-    name: "todo-app"
+    app: "todo-app"
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "3000"
