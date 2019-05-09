@@ -11,4 +11,4 @@ spec:
       targetPort: 6379
       protocol: "TCP"
   selector:
-    name: "redis-master"
+    app: "redis-master"
