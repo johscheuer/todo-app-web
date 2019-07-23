@@ -21,21 +21,3 @@ spec:
       - name: todo-app-config
         configMap:
           name: todo-app-config
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: todo-app-config
-  namespace: todo-app
-data:
-  redis.config: |-
-    {
-      "HealthCheckTime": 0,
-      "DBDriver": "redis",
-      "DBConfig": {
-        "master": "redis-master:6379",
-        "master-password": "",
-        "slave": "redis-slave:6379",
-        "slave-password": ""
-      }
-    }
