@@ -1,0 +1,7 @@
+*.yaml
+*.md
+*.sh
+docs
+configs
+k8s-deployment
+LICENSE
