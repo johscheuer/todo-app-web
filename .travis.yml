@@ -14,7 +14,7 @@ services:
 
 env:
   DOCKER_COMPOSE_VERSION: 1.24.1
-  GO111MODULE: on
+  GO111MODULE: "on"
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
