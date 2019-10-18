@@ -1,4 +1,4 @@
-FROM golang:1.12.5-stretch as Builder
+FROM golang:1.13.3-buster as Builder
 COPY ${HOME}/ /go/src/github.com/johscheuer/todo-app-web/
 WORKDIR /go/src/github.com/johscheuer/todo-app-web/
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o todo-app .

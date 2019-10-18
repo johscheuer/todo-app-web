@@ -3,7 +3,7 @@
 ## Whoami
 
 ```bash
-$ http localhost:3000/whoami
+$ curl localhost:3000/whoami
 [
     "127.0.0.1/8",
     "::1/128",
@@ -19,7 +19,7 @@ Exposes [Prometheus](https://prometheus.io/) Metrics.
 ## Read todo's
 
 ```bash
-$ http http://localhost:3000/read/todo
+$ curl http://localhost:3000/todo
 [
     "Eat",
     "Sleep",
@@ -32,8 +32,7 @@ $ http http://localhost:3000/read/todo
 ## Insert todo
 
 ```bash
-$ http http://localhost:3000/insert/todo/Hello
-
+$ curl -XPOST http://localhost:3000/todo/Hello
 [
   "Eat",
   "Sleep",
@@ -46,8 +45,7 @@ $ http http://localhost:3000/insert/todo/Hello
 ## Delete todo
 
 ```bash
-$ http http://localhost:3000/delete/todo/Hello
-
+$ curl -XDELETE http://localhost:3000/todo/Hello
 [
   "Eat",
   "Sleep",
@@ -59,8 +57,7 @@ $ http http://localhost:3000/delete/todo/Hello
 ## Health endpoint
 
 ```bash
-$ http http://localhost:3000/health
-
+$ curl http://localhost:3000/health
 {
     "redis-master-0": "ok",
     "redis-slave-0": "ok",
