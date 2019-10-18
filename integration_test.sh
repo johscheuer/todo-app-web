@@ -6,7 +6,7 @@ function clean_up {
 clean_up
 docker-compose up -d
 
-go test -v -tags -race integration
+go test -v -tags integration -race github.com/johscheuer/todo-app-web
 RET=$?
 clean_up
 
