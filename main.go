@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -25,42 +25,25 @@ func main() {
 
 	if showVersion {
 		log.Printf("Version: %s\n", appVersion)
-		return
+		os.Exit(0)
 	}
 
 	config, err := readConfig(*configFile)
 	if err != nil {
 		log.Println(err)
+		os.Exit(1)
 	}
 
 	gin.SetMode(config.ReleaseMode)
-	if strings.ToLower(config.DBDriver) == "mysql" {
-		database = tododb.NewMySQLDB(config.DBConfig, appVersion)
-	} else if strings.ToLower(config.DBDriver) == "redis" {
+	if strings.ToLower(config.DBDriver) == "redis" {
 		database = tododb.NewRedisDB(config.DBConfig, appVersion)
+	} else {
+		log.Printf("Datebase: %s is not supported", config.DBDriver)
+		os.Exit(1)
 	}
 
 	p := ginprometheus.NewPrometheus("gin")
 	database.RegisterMetrics()
-
-	// Iniitialize metrics
-	quit := make(chan struct{})
-	defer close(quit)
-	if config.HealthCheckTime > 0 {
-		healthCheckTimer := time.NewTicker(time.Duration(config.HealthCheckTime) * time.Second)
-		go func() {
-			for {
-				select {
-				case <-healthCheckTimer.C:
-					log.Println("Called Health check")
-					database.GetHealthStatus()
-				case <-quit:
-					healthCheckTimer.Stop()
-					return
-				}
-			}
-		}()
-	}
 
 	router := gin.Default()
 
