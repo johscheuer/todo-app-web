@@ -19,10 +19,9 @@ $(document).ready(function() {
         return false;
     }
 
-
     entryContentElement.val("")
     entryContentElement.parent().removeClass("has-error").addClass("has-success");
-    $.getJSON("insert/todo/" + entryValue, appendTodoList);
+    $.post("todo/" + entryValue, appendTodoList);
   }
 
   var handleDeletion = function(e){
@@ -34,7 +33,11 @@ $(document).ready(function() {
        continue
      }
      var checkbox = checkboxes[i];
-     $.getJSON("delete/todo/" + $(checkbox).closest('tr').text(), appendTodoList);
+     $.ajax({
+        url: "todo/" + $(checkbox).closest('tr').text(),
+        type: 'DELETE',
+        success: appendTodoList
+      });
     }
   }
 
@@ -43,7 +46,7 @@ $(document).ready(function() {
 
   // Poll every second.
   (function fetchTodos() {
-    $.getJSON("read/todo").done(appendTodoList).always(
+    $.getJSON("todo").done(appendTodoList).always(
       function() {
         setTimeout(fetchTodos, 10000);
       });
