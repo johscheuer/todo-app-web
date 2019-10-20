@@ -56,13 +56,13 @@ func TestInsertReadAndDeleteItem(t *testing.T) {
 	insertItem := "TestCase"
 
 	// Insert Item
-	if resp, err := getHTTPClient().Get(fmt.Sprintf("%s/insert/todo/%s", todoAppServer, insertItem)); err != nil || resp.StatusCode != 200 {
+	if resp, err := getHTTPClient().Post(fmt.Sprintf("%s/todo/%s", todoAppServer, insertItem), "", nil); err != nil || resp.StatusCode != 200 {
 		t.Log(err)
 		t.FailNow()
 	}
 
 	// Read Item
-	readResp, err := getHTTPClient().Get(fmt.Sprintf("%s/read/todo", todoAppServer))
+	readResp, err := getHTTPClient().Get(fmt.Sprintf("%s/todo", todoAppServer))
 	if err != nil || readResp.StatusCode != 200 {
 		t.Log(err)
 		t.FailNow()
@@ -80,7 +80,13 @@ func TestInsertReadAndDeleteItem(t *testing.T) {
 	}
 
 	// Delete Item
-	deleteResp, err := getHTTPClient().Get(fmt.Sprintf("%s/delete/todo/%s", todoAppServer, insertItem))
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/todo/%s", todoAppServer, insertItem), nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	deleteResp, err := getHTTPClient().Do(req)
 	if err != nil || deleteResp.StatusCode != 200 {
 		t.Log(err)
 		t.FailNow()

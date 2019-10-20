@@ -48,9 +48,9 @@ func main() {
 	router := gin.Default()
 
 	p.Use(router)
-	router.GET("/read/todo", readTodoHandler)
-	router.GET("/insert/todo/:value", insertTodoHandler)
-	router.GET("/delete/todo/:value", deleteTodoHandler)
+	router.GET("/todo", readTodoHandler)
+	router.POST("/todo/:value", insertTodoHandler)
+	router.DELETE("/todo/:value", deleteTodoHandler)
 	router.GET("/health", healthCheckHandler)
 	router.GET("/whoami", whoAmIHandler)
 	router.GET("/version", versionHandler)
