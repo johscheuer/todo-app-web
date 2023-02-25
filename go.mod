@@ -15,7 +15,7 @@ require (
 	github.com/uber/tchannel-go v0.0.0-20161130193021-90a659997997
 	github.com/ugorji/go v1.1.7 // indirect
 	golang.org/x/net v0.0.0-20191014212845-da9a3fd4c582 // indirect
-	golang.org/x/sys v0.0.0-20191018095205-727590c5006e // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/redis.v5 v5.2.9
 	gopkg.in/yaml.v2 v2.2.4 // indirect
 )
